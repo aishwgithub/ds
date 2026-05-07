@@ -1,0 +1,64 @@
+Implement token ring based mutual exclusion algorithm.
+
+import java.util.Scanner;
+
+public class TokenRing {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+
+        int n = sc.nextInt();
+
+        int token = 0; // Initially token with P0
+
+        while (true) {
+
+            System.out.println(
+                "\nToken is with Process P" + token
+            );
+
+            System.out.print(
+                "Does P" + token +
+                " want to enter Critical Section? (y/n/exit): "
+            );
+
+            String choice = sc.next();
+
+            // Exit condition
+            if (choice.equalsIgnoreCase("exit")) {
+
+                System.out.println("Program terminated.");
+
+                break;
+            }
+
+            // Enter Critical Section
+            if (choice.equalsIgnoreCase("y")) {
+
+                System.out.println(
+                    "P" + token +
+                    " ENTERING Critical Section"
+                );
+
+                try {
+
+                    Thread.sleep(1000);
+
+                } catch (Exception e) {}
+
+                System.out.println(
+                    "P" + token +
+                    " EXITING Critical Section"
+                );
+            }
+
+            // Pass token to next process
+            token = (token + 1) % n;
+        }
+
+        sc.close();
+    }
+}
