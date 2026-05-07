@@ -1,0 +1,145 @@
+Berkeley Algorithm
+
+
+import java.util.Scanner;
+
+public class Berkeley {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int[] clock = new int[n];
+
+        // Input clock times
+        System.out.println("Enter clock time of each process:");
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("P" + i + ": ");
+            clock[i] = sc.nextInt();
+        }
+
+        // Calculate average time
+        int sum = 0;
+
+        for (int i = 0; i < n; i++) {
+            sum += clock[i];
+        }
+
+        int avg = sum / n;
+
+        System.out.println("\nAverage Time = " + avg);
+
+        // Synchronization
+        System.out.println("\nClock Synchronization:");
+
+        for (int i = 0; i < n; i++) {
+
+            int adjustment = avg - clock[i];
+
+            System.out.println("P" + i + " adjusts clock by "
+                    + adjustment + " units");
+
+            clock[i] = avg;
+        }
+
+        // Final synchronized clocks
+        System.out.println("\nUpdated Clock Values:");
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("P" + i + ": " + clock[i]);
+        }
+
+        sc.close();
+    }
+}
+
+
+Another
+
+Server.java:
+
+import java.io.*; 
+import java.net.*; 
+import java.util.*; 
+ 
+public class BerkeleyServer { 
+    static final int PORT = 5000; 
+ 
+    public static void main(String[] args) throws Exception { 
+        ServerSocket serverSocket = new ServerSocket(PORT); 
+        System.out.println("Master started..."); 
+ 
+        List<Long> clientTimes = new ArrayList<>(); 
+        List<Socket> clients = new ArrayList<>(); 
+ 
+        // Accept 3 clients 
+        for (int i = 0; i < 3; i++) { 
+            Socket socket = serverSocket.accept(); 
+            clients.add(socket); 
+ 
+            DataInputStream in = new DataInputStream(socket.getInputStream()); 
+            long clientTime = in.readLong(); 
+ 
+            clientTimes.add(clientTime); 
+            System.out.println("Received time: " + clientTime); 
+        } 
+ 
+        long masterTime = System.currentTimeMillis(); 
+        clientTimes.add(masterTime); 
+ 
+        // Compute average 
+        long sum = 0; 
+        for (long t : clientTimes) sum += t; 
+ 
+        long avg = sum / clientTimes.size(); 
+        System.out.println("Average time: " + avg); 
+ 
+        // Send adjustment 
+        for (int i = 0; i < clients.size(); i++) { 
+            Socket s = clients.get(i); 
+            DataOutputStream out = new DataOutputStream(s.getOutputStream()); 
+ 
+            long offset = avg - clientTimes.get(i); 
+            out.writeLong(offset); 
+ 
+            System.out.println("Sent offset: " + offset); 
+        } 
+ 
+        serverSocket.close(); 
+    } 
+}
+
+client.java:
+
+import java.io.*; 
+import java.net.*; 
+ 
+public class BerkeleyClient { 
+    public static void main(String[] args) throws Exception { 
+        Socket socket = new Socket("localhost", 5000); 
+ 
+        DataOutputStream out = new DataOutputStream(socket.getOutputStream()); 
+        DataInputStream in = new DataInputStream(socket.getInputStream()); 
+ 
+        long localTime = System.currentTimeMillis(); 
+        System.out.println("Local time: " + localTime); 
+ 
+        // Send time to server 
+        out.writeLong(localTime); 
+ 
+        // Receive offset 
+        long offset = in.readLong(); 
+ 
+        long updatedTime = localTime + offset; 
+        System.out.println("Adjusted time: " + updatedTime); 
+ 
+        socket.close(); 
+    } 
+}
+
+
+
