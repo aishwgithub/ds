@@ -1,0 +1,90 @@
+MessageService.java
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface MessageService extends Remote
+{
+    String sendMessage(String msg) throws RemoteException;
+}
+
+MessageServiceImpl.java
+
+import java.rmi.server.UnicastRemoteObject;
+import java.rmi.RemoteException;
+
+public class MessageServiceImpl extends UnicastRemoteObject implements MessageService
+{
+    protected MessageServiceImpl() throws RemoteException
+    {
+        super();
+    }
+
+    public synchronized String sendMessage(String msg) throws RemoteException
+    {
+        String threadName = Thread.currentThread().getName();
+
+        System.out.println("Client Message: " + msg);
+        System.out.println("Handled by Thread: " + threadName);
+
+        return "Server received: " + msg;
+    }
+}
+
+Server.java
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+public class Server
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            MessageServiceImpl obj = new MessageServiceImpl();
+
+            Registry registry = LocateRegistry.createRegistry(1099);
+
+            registry.rebind("MessageService", obj);
+
+            System.out.println("RMI Server Started...");
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
+
+Client.java
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.Scanner;
+
+public class Client
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+
+            MessageService stub = (MessageService) registry.lookup("MessageService");
+
+            Scanner sc = new Scanner(System.in);
+
+            System.out.print("Enter Message: ");
+            String msg = sc.nextLine();
+
+            String response = stub.sendMessage(msg);
+
+            System.out.println("Server Response: " + response);
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
